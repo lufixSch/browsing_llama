@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --plain-color: 255 255 255;
+    --contrast-color: 0 0 0;
+    --primary: 217, 119, 6;
+
+    @media (prefers-color-scheme: dark) {
+      --plain-color: 20 20 30;
+      --contrast-color: 240 240 255;
+      --primary: 234, 179, 8;
+    }
+  }
+}
+
+@layer components {
+  body {
+    @apply text-contrast bg-plain;
+  }
+
+  a {
+    @apply text-primary hover:text-primary-shade;
+  }
+}

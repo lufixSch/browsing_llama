@@ -1,14 +1,14 @@
 /** Manage the settings for the application stored in `browser.storage.sync` */
 export default class Settings {
   static openaiEndpointDefault = 'http://localhost:5000/v1';
-  static openaiKeyDefault = '';
+  static openaiKeyDefault = 'sk-11111111111111111111111111';
   static whitelistDefault = [];
   static blacklistDefault = [];
-  static refContainersDefault = ['main', 'article', 'section'];
+  static refContainersDefault = ['article', 'section', 'main'];
   static validRefPathsDefault =
     '^/(.*\\.(php|html|[0-9]|md|txt|htm)|((?!\\.).)*)/?$'; // regex matching pathnames ending on .php, .html, .md, .txt, .htm, [0-9] (for paths ending on a version number) or don't contain a dot
 
-  /** Store openai api endpoint */
+  /** Get stored openai api endpoint */
   static get openaiEndpoint() {
     return Settings.get('openai_api_key', Settings.openaiEndpointDefault);
   }
@@ -18,7 +18,7 @@ export default class Settings {
     return Settings.set('openai_api_key', val);
   }
 
-  /** Store openai api key */
+  /** Get stored openai api key */
   static get openaiKey() {
     return Settings.get('openai_key', Settings.openaiKeyDefault);
   }
@@ -28,7 +28,7 @@ export default class Settings {
     return Settings.set('openai_key', val);
   }
 
-  /** Store whitelist of allowed domains to search for links and allowed domains to open*/
+  /** Get stored whitelist of allowed domains to search for links and allowed domains to open*/
   static get whitelist() {
     return Settings.get('whitelist', Settings.whitelistDefault);
   }
@@ -38,7 +38,7 @@ export default class Settings {
     return Settings.set('whitelist', val);
   }
 
-  /** Store blacklist of domains to ignore */
+  /** Get stored blacklist of domains to ignore */
   static get blacklist() {
     return Settings.get('whitelist', Settings.blacklistDefault);
   }
@@ -48,7 +48,7 @@ export default class Settings {
     return Settings.set('blacklist', val);
   }
 
-  /** Store ref containers */
+  /** Get stored ref containers */
   static get refContainers() {
     return Settings.get('ref_containers', Settings.refContainersDefault);
   }
@@ -58,7 +58,7 @@ export default class Settings {
     return Settings.set('ref_containers', val);
   }
 
-  /** Store valid ref paths */
+  /** Get stored valid ref paths */
   static get validRefPaths() {
     return Settings.get('valid_ref_paths', Settings.validRefPathsDefault);
   }
@@ -68,10 +68,9 @@ export default class Settings {
     return Settings.set('valid_ref_paths', val);
   }
 
-  static get<T>(name: string, defaultValue: T): Promise<T> {
-    return browser.storage.sync
-      .get(name)
-      .then((val) => val[name] || defaultValue);
+  static async get<T>(name: string, defaultValue: T): Promise<T> {
+    const vals: { [key: string]: any } = browser.storage.sync.get(name);
+    return (vals[name] as T) || defaultValue;
   }
 
   static set<T>(name: string, value: T): Promise<void> {

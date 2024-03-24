@@ -19,9 +19,10 @@
       "js": ["content.js"]
     }
   ],
-  "permissions": ["activeTab", "scripting", "storage", "<all_urls>"],
+  "permissions": ["activeTab", "scripting", "storage", "<all_urls>", "tabs"],
   "options_ui": {
-    "page": "options.html"
+    "page": "options.html",
+    "chrome_style": true
   },
   "web_accessible_resources": ["assets/*", "content_script.js"]
 }

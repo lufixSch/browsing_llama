@@ -1,5 +1,11 @@
 /** Message types */
-export type MessageTypes = 'hover' | 'stop' | 'chunk';
+export type MessageTypes =
+  | 'role'
+  | 'hover'
+  | 'stop'
+  | 'article'
+  | 'chunk'
+  | 'summarize';
 
 /** Message  */
 export interface Message<T> {
@@ -11,17 +17,41 @@ export interface Message<T> {
 export class Messager {
   /** Send a message */
   public static send<T>(msg: Message<T>) {
-    browser.runtime.sendMessage(msg);
+    return browser.runtime.sendMessage(msg);
   }
 
   /** Send on hover event */
   public static hover(href: string) {
-    Messager.send<msgTypeGeneric['hover']>({ type: 'hover', content: href });
+    return Messager.send<msgTypeGeneric['hover']>({
+      type: 'hover',
+      content: href,
+    });
   }
 
   /** Send stop event */
   public static stop() {
-    Messager.send<msgTypeGeneric['stop']>({ type: 'stop' });
+    return Messager.send<msgTypeGeneric['stop']>({ type: 'stop' });
+  }
+
+  /** Send summary page content */
+  public static async sendArticle(content: string) {
+    return await Messager.send<msgTypeGeneric['article']>({
+      type: 'article',
+      content,
+    });
+  }
+
+  /** Send chunk of summary page content */
+  public static sendSummaryChunk(content: { delta: string; text: string }) {
+    return Messager.send<msgTypeGeneric['chunk']>({
+      type: 'chunk',
+      content,
+    });
+  }
+
+  /** Request tab role (weather it is a summary page or not) */
+  public static requestRole(): Promise<Message<boolean>> {
+    return Messager.send<msgTypeGeneric['role']>({ type: 'role' });
   }
 
   /** Subscribe to a specific type of messages */
@@ -55,6 +85,9 @@ export class Messager {
 
 type msgTypeGeneric = {
   stop: undefined;
+  role: undefined;
   hover: string;
-  chunk: string;
+  chunk: { delta: string; text: string };
+  article: string;
+  summarize: string[];
 };

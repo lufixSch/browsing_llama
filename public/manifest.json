@@ -2,8 +2,13 @@
   "manifest_version": 2,
   "name": "BrowsingLLaMa",
   "version": "0.0.1",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "browsingllama@lufixsch.github.com"
+    }
+  },
   "background": {
-    "scripts": ["background.js"]
+    "page": "background.html"
   },
   "browser_action": {
     "default_popup": "index.html"
@@ -14,8 +19,9 @@
       "js": ["content.js"]
     }
   ],
-  "permissions": ["activeTab", "scripting"],
+  "permissions": ["activeTab", "scripting", "storage", "<all_urls>"],
   "options_ui": {
     "page": "options.html"
-  }
+  },
+  "web_accessible_resources": ["assets/*", "content_script.js"]
 }

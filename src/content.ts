@@ -5,7 +5,12 @@ import Settings from './settings';
 import { URLValidator } from './validator';
 import OpenAI from 'openai';
 
-let stream: Stream<OpenAI.Chat.ChatCompletionChunk> | null = null;
+Messager.subscribe('summarize', createSummary);
+
+let stream: Stream<OpenAI.Chat.ChatCompletionChunk> | undefined;
+let requestStop: boolean = false;
+let anchor: HTMLAnchorElement | null = null;
+let summaryTimeout: NodeJS.Timeout | null = null;
 
 /** Convert href to absolute URL */
 function hrefToUrl(href: string | null | undefined) {
@@ -31,29 +36,76 @@ async function createSummary(msg: Message<string>) {
     await Settings.openaiKey
   );
 
-  stream = await llm.generateSummary(msg.content!);
+  if (anchor == null) throw new Error('Missing anchor');
 
+  if (requestStop) {
+    requestStop = false;
+    return;
+  }
+
+  // Build div to display the summary
+  const summaryBox = anchor.appendChild(document.createElement('div'));
+  const textBox = summaryBox.appendChild(document.createElement('div'));
+  textBox.innerText = 'Loading...';
+  summaryBox.classList.add('browsing-llama-summary-box');
+
+  stream = await llm.generateSummary(msg.content!);
+  if (requestStop) {
+    stream.controller.abort('Stopped before stream could start!');
+    requestStop = false;
+    return;
+  }
+
+  // Add summary to div durring generation
   let text = '';
   for await (const message of stream) {
+    console.log(message);
     text += message.choices[0].delta.content || '';
+
+    // Update summary box only if `text` has a value (keeps the 'Loading...' text for longer)
+    if (text) {
+      textBox.innerText = text;
+    }
   }
-  console.log(text);
+
+  console.debug('Finished summarizing!');
 }
 
 /** Create summary on hover over the link */
 function onHover(ev: Event) {
-  Messager.subscribe('summarize', createSummary);
-  const url = hrefToUrl((ev.target as HTMLAnchorElement)?.getAttribute('href'));
-  if (url) Messager.hover(url.href);
+  anchor = ev.target as HTMLAnchorElement;
+
+  if (
+    [...anchor.childNodes].reduce(
+      (_hasSummary, el) =>
+        (el as HTMLElement).classList?.contains('browsing-llama-summary-box'),
+      false
+    )
+  )
+    return;
+
+  const url = hrefToUrl(anchor.getAttribute('href'));
+
+  // Wait befor starting summary to avoid race condition with stop message (which keeps tabs open)
+  summaryTimeout = setTimeout(() => {
+    summaryTimeout = null;
+    if (url) Messager.hover(url.href);
+  }, 100);
 }
 
 /** Stop summarizing */
 function onStop() {
   console.log('Stop');
+
   if (stream) {
-    stream.controller.abort();
-    stream = null;
+    stream.controller.abort('Stopped!');
+  } else if (summaryTimeout) {
+    clearTimeout(summaryTimeout);
+    summaryTimeout = null;
+  } else {
+    requestStop = true;
   }
+
   Messager.stop();
 }
 

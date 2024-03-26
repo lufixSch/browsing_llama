@@ -1,0 +1,33 @@
+.browsing-llama-summary-box {
+  --bl-color-plain: 255 255 255;
+  --bl-color-contrast: 0 0 0;
+  --bl-color-primary: 217, 119, 6;
+
+  @media (prefers-color-scheme: dark) {
+    --bl-color-plain: 20 20 30;
+    --bl-color-contrast: 240 240 255;
+    --bl-color-primary: 234, 179, 8;
+  }
+}
+
+a .browsing-llama-summary-box {
+  visibility: hidden;
+  display: block;
+  position: absolute;
+  z-index: 9999;
+  padding: 8px;
+}
+
+a .browsing-llama-summary-box div {
+  background: rgb(var(--bl-color-plain)) !important;
+  color: rgb(var(--bl-color-contrast)) !important;
+  padding: 8px !important;
+  border-radius: 8px !important;
+  max-width: 400px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+a:hover .browsing-llama-summary-box {
+  visibility: visible;
+}

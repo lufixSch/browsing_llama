@@ -20,10 +20,14 @@ export default class LLMInterface {
   }
 
   public async chat(messages: { role: ChatRoles; content: string }[]) {
-    return await this.client.chat.completions.create({
-      messages,
-      model: 'gpt-3.5-turbo',
-    });
+    return (
+      await this.client.chat.completions
+        .create({
+          messages,
+          model: 'gpt-3.5-turbo',
+        })
+        .asResponse()
+    ).body;
   }
 
   public async chatStream(messages: { role: ChatRoles; content: string }[]) {
@@ -37,13 +41,8 @@ export default class LLMInterface {
   public async generateSummary(content: string) {
     return await this.chatStream([
       {
-        role: 'system',
-        content:
-          'You are a Researcher with the ability to summarize the essence of an article into 2 to 3 sentences. The user will provide the article, and you will return the summary. You will only return the summary!',
-      },
-      {
         role: 'user',
-        content: `Summarize the following article:\n${content}`,
+        content: `You are a Researcher with the ability to summarize the essence of an article into 2 to 3 sentences. To improve readability you will format the summary in markdown. Summarize the following article as short as possible: \n\n ${content}`,
       },
     ]);
   }

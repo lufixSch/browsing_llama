@@ -34,7 +34,7 @@ async function onArticle(message: Message<string>) {
   if (!currentTab) throw new Error('No current tab');
 
   console.log('sending article to tab', currentTab);
-  browser.tabs.sendMessage(currentTab, {
+  await browser.tabs.sendMessage(currentTab, {
     type: 'summarize',
     content: message.content,
   });
